@@ -7,7 +7,7 @@ import (
 	"github.com/scylladb/gocqlx/v2"
 )
 
-func NewCluster(keyspace, hosts string) (*gocqlx.Session, error) {
+func newCluster(keyspace, hosts string) (*gocqlx.Session, error) {
 	h := strings.Split(hosts, ",")
 
 	manager := cqlx.NewManager(keyspace, h)

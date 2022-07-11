@@ -12,6 +12,11 @@ import (
 	scyllacdc "github.com/scylladb/scylla-cdc-go"
 )
 
+const (
+	FRIEND_RELATIONS = "friend_relations"
+	PARTY_FAVORITES  = "party_favorites"
+)
+
 func main() {
 	c, err := config.LoadConfig()
 	if err != nil {
@@ -25,15 +30,16 @@ func main() {
 	}
 	defer nc.Close()
 
-	sess, err := NewCluster(c.CQL_KEYSPACE, c.CQL_HOSTS)
+	sess, err := newCluster(c.CQL_KEYSPACE, c.CQL_HOSTS)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	cfg := &scyllacdc.ReaderConfig{
 		Session:               sess.Session,
-		TableNames:            []string{c.CQL_KEYSPACE + ".friend_relation", c.CQL_KEYSPACE + ".party_favorites"},
+		TableNames:            []string{c.CQL_KEYSPACE + "." + FRIEND_RELATIONS, c.CQL_KEYSPACE + "." + PARTY_FAVORITES},
 		ChangeConsumerFactory: &myFactory{},
+		Logger:                log.New(os.Stderr, "", log.Ldate|log.Lmicroseconds|log.Lshortfile),
 	}
 
 	reader, err := scyllacdc.NewReader(context.Background(), cfg)

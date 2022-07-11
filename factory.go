@@ -15,7 +15,9 @@ type myFactory struct {
 func (f *myFactory) CreateChangeConsumer(ctx context.Context, input scyllacdc.CreateChangeConsumerInput) (scyllacdc.ChangeConsumer, error) {
 	reporter := scyllacdc.NewPeriodicProgressReporter(f.logger, time.Minute, input.ProgressReporter)
 	reporter.Start(ctx)
-	return &consumer.Consumer{
-		TableName: input.TableName,
-	}, nil
+	if input.TableName == FRIEND_RELATIONS {
+		return &consumer.FriendRelationConsumer{}, nil
+	} else {
+		return &consumer.PartyFavoritesConsumer{}, nil
+	}
 }
