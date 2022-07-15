@@ -4,21 +4,21 @@ import (
 	"context"
 	"log"
 
+	"github.com/clubo-app/packages/stream"
 	scyllacdc "github.com/scylladb/scylla-cdc-go"
 )
 
-type PartyFavoritesConsumer struct {
-	Id        int
-	TableName string
-	Reporter  *scyllacdc.PeriodicProgressReporter
+type PartyFavoritesHandler struct {
+	stream stream.Stream
 }
 
-func (c *PartyFavoritesConsumer) End() error {
-	_ = c.Reporter.SaveAndStop(context.Background())
-	return nil
+func NewPartyFavoritesHandler(st stream.Stream) PartyFavoritesHandler {
+	return PartyFavoritesHandler{stream: st}
 }
 
-func (c *PartyFavoritesConsumer) Consume(ctx context.Context, ch scyllacdc.Change) error {
-	log.Printf("%v", ch.Delta)
+func (c *PartyFavoritesHandler) Consume(ctx context.Context, ch scyllacdc.Change) error {
+	log.Println("Consuming from PartyFavoritesConsumer")
+
+	log.Println(ch.Delta)
 	return nil
 }
