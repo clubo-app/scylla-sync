@@ -26,18 +26,17 @@ func main() {
 	}
 
 	opts := []nats.Option{nats.Name("Scylla-Sync Service")}
-	nc, err := stream.Connect(c.NATS_CLUSTER, opts)
+	stream, err := stream.Connect(c.NATS_CLUSTER, opts)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer nc.Close()
-
-	stream := stream.New(nc)
+	defer stream.Close()
 
 	sess, err := newCluster(c.CQL_KEYSPACE, c.CQL_HOSTS)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	defer sess.Close()
 
 	logger := log.New(os.Stderr, "", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 
@@ -46,9 +45,15 @@ func main() {
 
 	factory := newFactory(logger, fh, ph)
 
+	progressManager, err := scyllacdc.NewTableBackedProgressManager(sess.Session, "cdc_progress", "scylla_sync")
+	if err != nil {
+		log.Println("Error creating progress Manager", err)
+	}
+
 	cfg := &scyllacdc.ReaderConfig{
 		Session:               sess.Session,
 		TableNames:            []string{c.CQL_KEYSPACE + "." + FRIEND_RELATIONS, c.CQL_KEYSPACE + "." + PARTY_FAVORITES},
+		ProgressManager:       progressManager,
 		ChangeConsumerFactory: &factory,
 		Logger:                logger,
 		Advanced: scyllacdc.AdvancedReaderConfig{

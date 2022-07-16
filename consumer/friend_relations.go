@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/clubo-app/packages/stream"
 	"github.com/clubo-app/protobuf/events"
@@ -18,7 +19,6 @@ func NewFriendRelationHandler(st stream.Stream) FriendRelationHandler {
 }
 
 func (c *FriendRelationHandler) Consume(ctx context.Context, ch scyllacdc.Change) error {
-
 	for _, change := range ch.Delta {
 		var err error
 		switch change.GetOperation() {
@@ -55,14 +55,19 @@ func (c *FriendRelationHandler) processUpdateOrInsert(ctx context.Context, chang
 			RequestedAt: rAt,
 		}
 
-		err = c.stream.PublishEvent(e)
+		err = c.stream.PublishEvent(&e)
 	} else {
 		e := events.FriendCreated{
 			UserId:     uId,
 			FriendId:   fId,
 			AcceptedAt: aAt,
 		}
-		err = c.stream.PublishEvent(e)
+
+		err = c.stream.PublishEvent(&e)
+	}
+
+	if err != nil {
+		log.Println(err)
 	}
 
 	return err

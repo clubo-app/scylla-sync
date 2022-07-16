@@ -3,7 +3,7 @@ module github.com/clubo-app/scylla-sync-service
 go 1.18
 
 require (
-	github.com/clubo-app/packages v0.0.0-20220709160342-b6f9e08e1215
+	github.com/clubo-app/packages v0.0.0-20220716201225-65ced0466d5f
 	github.com/clubo-app/protobuf v0.0.0-20220715185614-fed5928471b0
 	github.com/nats-io/nats.go v1.16.0
 	github.com/scylladb/gocqlx/v2 v2.7.0

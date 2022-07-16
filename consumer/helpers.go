@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"log"
 	"reflect"
 	"time"
 
@@ -14,7 +13,6 @@ const (
 )
 
 func ParseString(i any) string {
-	log.Println(reflect.TypeOf(i))
 	if i != nil {
 		return *i.(*string)
 	}

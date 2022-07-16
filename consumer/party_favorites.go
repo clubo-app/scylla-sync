@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"log"
 
 	"github.com/clubo-app/packages/stream"
 	scyllacdc "github.com/scylladb/scylla-cdc-go"
@@ -17,8 +16,5 @@ func NewPartyFavoritesHandler(st stream.Stream) PartyFavoritesHandler {
 }
 
 func (c *PartyFavoritesHandler) Consume(ctx context.Context, ch scyllacdc.Change) error {
-	log.Println("Consuming from PartyFavoritesConsumer")
-
-	log.Println(ch.Delta)
 	return nil
 }

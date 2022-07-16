@@ -49,10 +49,8 @@ github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWR
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/clubo-app/packages v0.0.0-20220709160342-b6f9e08e1215 h1:XdX4BcSCKgpEFzu5RXXjdC99nZP6V0LrKX3XWAXJuDk=
-github.com/clubo-app/packages v0.0.0-20220709160342-b6f9e08e1215/go.mod h1:aF4EK+TRUS4mSgaGjHCkA1ebA593tSYiSWYQaSqVTGc=
-github.com/clubo-app/protobuf v0.0.0-20220712173853-9036ade6d4f0 h1:KmFjkgaWp+zBsGmeq476NNv7o3wD7MzuNSCcitxCET8=
-github.com/clubo-app/protobuf v0.0.0-20220712173853-9036ade6d4f0/go.mod h1:HjqyM6gBb0BF7Vvj+zFYOrZDBaWDEougmcuMmYg9KKU=
+github.com/clubo-app/packages v0.0.0-20220716201225-65ced0466d5f h1:+HPmIOh/FB2E98Hu7oYVcyPPrKAn7TQyyTdgx1GhZTs=
+github.com/clubo-app/packages v0.0.0-20220716201225-65ced0466d5f/go.mod h1:aF4EK+TRUS4mSgaGjHCkA1ebA593tSYiSWYQaSqVTGc=
 github.com/clubo-app/protobuf v0.0.0-20220715185614-fed5928471b0 h1:dzDPM+oseeC0CyG1Yy5oCQqI3BlklRYgH0WUxPjTbQg=
 github.com/clubo-app/protobuf v0.0.0-20220715185614-fed5928471b0/go.mod h1:HjqyM6gBb0BF7Vvj+zFYOrZDBaWDEougmcuMmYg9KKU=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
