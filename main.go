@@ -14,11 +14,6 @@ import (
 	scyllacdc "github.com/scylladb/scylla-cdc-go"
 )
 
-const (
-	FRIEND_RELATIONS = "friend_relations"
-	PARTY_FAVORITES  = "party_favorites"
-)
-
 func main() {
 	c, err := config.LoadConfig()
 	if err != nil {
@@ -39,22 +34,17 @@ func main() {
 	defer sess.Close()
 
 	logger := log.New(os.Stderr, "", log.Ldate|log.Lmicroseconds|log.Lshortfile)
-
-	fh := consumer.NewFriendRelationHandler(stream)
-	ph := consumer.NewPartyFavoritesHandler(stream)
-
-	factory := newFactory(logger, fh, ph)
-
-	progressManager, err := scyllacdc.NewTableBackedProgressManager(sess.Session, "cdc_progress", "scylla_sync")
-	if err != nil {
-		log.Println("Error creating progress Manager", err)
-	}
+	factory := newFactory(logger, stream)
+	// progressManager, err := scyllacdc.NewTableBackedProgressManager(sess.Session, "cdc_progress", "scylla_sync")
+	// if err != nil {
+	// log.Println("Error creating progress Manager", err)
+	// }
 
 	cfg := &scyllacdc.ReaderConfig{
-		Session:               sess.Session,
-		TableNames:            []string{c.CQL_KEYSPACE + "." + FRIEND_RELATIONS, c.CQL_KEYSPACE + "." + PARTY_FAVORITES},
-		ProgressManager:       progressManager,
-		ChangeConsumerFactory: &factory,
+		Session:    sess.Session,
+		TableNames: []string{c.CQL_KEYSPACE + "." + consumer.FRIEND_RELATIONS_TABLE, c.CQL_KEYSPACE + "." + consumer.FAVORITE_PARTIES_TABLE},
+		// ProgressManager:       progressManager,
+		ChangeConsumerFactory: factory,
 		Logger:                logger,
 		Advanced: scyllacdc.AdvancedReaderConfig{
 			PostEmptyQueryDelay:    time.Second * 1,

@@ -2,31 +2,34 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/clubo-app/packages/stream"
 	"github.com/clubo-app/scylla-sync-service/consumer"
 	scyllacdc "github.com/scylladb/scylla-cdc-go"
 )
 
 type factory struct {
 	logger scyllacdc.Logger
-	fh     consumer.FriendRelationHandler
-	ph     consumer.PartyFavoritesHandler
+	stream stream.Stream
+	nextID int
 }
 
-func newFactory(logger scyllacdc.Logger, fh consumer.FriendRelationHandler, ph consumer.PartyFavoritesHandler) factory {
-	return factory{
+func newFactory(logger scyllacdc.Logger, stream stream.Stream) *factory {
+	return &factory{
 		logger: logger,
-		fh:     fh,
-		ph:     ph,
+		stream: stream,
 	}
 }
 
-const reportPeriod = time.Minute
+const reportPeriod = 1 * time.Minute
 
 func (f *factory) CreateChangeConsumer(ctx context.Context, input scyllacdc.CreateChangeConsumerInput) (scyllacdc.ChangeConsumer, error) {
+	f.nextID++
+
 	reporter := scyllacdc.NewPeriodicProgressReporter(f.logger, time.Minute, input.ProgressReporter)
 	reporter.Start(ctx)
 
@@ -35,10 +38,20 @@ func (f *factory) CreateChangeConsumer(ctx context.Context, input scyllacdc.Crea
 		return nil, fmt.Errorf("table name is not fully qualified: %s", input.TableName)
 	}
 
-	return &consumer.Consumer{
-		TableName:     splitTableName[1],
-		Reporter:      scyllacdc.NewPeriodicProgressReporter(f.logger, reportPeriod, input.ProgressReporter),
-		FriendHandler: f.fh,
-		PartyHandler:  f.ph,
-	}, nil
+	if splitTableName[1] == consumer.FRIEND_RELATIONS_TABLE {
+		return &consumer.FriendRelationConsumer{
+			Id:        f.nextID - 1,
+			TableName: splitTableName[1],
+			Stream:    f.stream,
+			Reporter:  reporter,
+		}, nil
+	} else if splitTableName[1] == consumer.FAVORITE_PARTIES_TABLE {
+		return &consumer.FavoritePartiesConsumer{
+			Id:        f.nextID - 1,
+			TableName: splitTableName[1],
+			Stream:    f.stream,
+			Reporter:  reporter,
+		}, nil
+	}
+	return nil, errors.New("Unsupported Table")
 }

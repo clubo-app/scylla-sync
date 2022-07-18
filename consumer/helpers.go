@@ -9,7 +9,7 @@ import (
 
 const (
 	FRIEND_RELATIONS_TABLE = "friend_relations"
-	PARTY_FAVORITES_TABLE  = "party_favorites"
+	FAVORITE_PARTIES_TABLE = "favorite_parties"
 )
 
 func ParseString(i any) string {

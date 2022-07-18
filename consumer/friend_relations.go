@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"github.com/clubo-app/packages/stream"
@@ -10,33 +9,34 @@ import (
 	scyllacdc "github.com/scylladb/scylla-cdc-go"
 )
 
-type FriendRelationHandler struct {
-	stream stream.Stream
+type FriendRelationConsumer struct {
+	Id        int
+	TableName string
+	Stream    stream.Stream
+	Reporter  *scyllacdc.PeriodicProgressReporter
 }
 
-func NewFriendRelationHandler(st stream.Stream) FriendRelationHandler {
-	return FriendRelationHandler{stream: st}
-}
-
-func (c *FriendRelationHandler) Consume(ctx context.Context, ch scyllacdc.Change) error {
-	for _, change := range ch.Delta {
-		var err error
-		switch change.GetOperation() {
-		case scyllacdc.Update:
-			err = c.processUpdateOrInsert(ctx, change)
-		case scyllacdc.Insert:
-			err = c.processUpdateOrInsert(ctx, change)
-		default:
-			return errors.New("unsupported operation: " + change.GetOperation().String())
-		}
-		if err != nil {
-			return err
-		}
-	}
+func (c *FriendRelationConsumer) End() error {
+	_ = c.Reporter.SaveAndStop(context.Background())
 	return nil
 }
 
-func (c *FriendRelationHandler) processUpdateOrInsert(ctx context.Context, change *scyllacdc.ChangeRow) error {
+func (c *FriendRelationConsumer) Consume(ctx context.Context, ch scyllacdc.Change) error {
+	for _, change := range ch.Delta {
+		switch change.GetOperation() {
+		case scyllacdc.Update:
+			_ = c.processUpdateOrInsert(ctx, change)
+		case scyllacdc.Insert:
+			_ = c.processUpdateOrInsert(ctx, change)
+		default:
+			log.Println("unsupported operation: " + change.GetOperation().String())
+		}
+	}
+	c.Reporter.Update(ch.Time)
+	return nil
+}
+
+func (c *FriendRelationConsumer) processUpdateOrInsert(ctx context.Context, change *scyllacdc.ChangeRow) error {
 	user_id, _ := change.GetValue("user_id")
 	friend_id, _ := change.GetValue("friend_id")
 	accepted_at, _ := change.GetValue("accepted_at")
@@ -55,7 +55,7 @@ func (c *FriendRelationHandler) processUpdateOrInsert(ctx context.Context, chang
 			RequestedAt: rAt,
 		}
 
-		err = c.stream.PublishEvent(&e)
+		err = c.Stream.PublishEvent(&e)
 	} else {
 		e := events.FriendCreated{
 			UserId:     uId,
@@ -63,7 +63,7 @@ func (c *FriendRelationHandler) processUpdateOrInsert(ctx context.Context, chang
 			AcceptedAt: aAt,
 		}
 
-		err = c.stream.PublishEvent(&e)
+		err = c.Stream.PublishEvent(&e)
 	}
 
 	if err != nil {
@@ -71,4 +71,25 @@ func (c *FriendRelationHandler) processUpdateOrInsert(ctx context.Context, chang
 	}
 
 	return err
+}
+
+func (c *FriendRelationConsumer) processDelete(ctx context.Context, change *scyllacdc.ChangeRow) error {
+	log.Println(change)
+	user_id, _ := change.GetValue("user_id")
+	friend_id, _ := change.GetValue("friend_id")
+
+	uId := ParseString(user_id)
+	fId := ParseString(friend_id)
+	if uId != "" && fId != "" {
+		e := events.FriendRemoved{
+			UserId:   uId,
+			FriendId: fId,
+		}
+		log.Println("Publishing: ", e)
+		err := c.Stream.PublishEvent(&e)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	return nil
 }
